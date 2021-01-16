@@ -1,0 +1,110 @@
+
+
+ #define ENB 11
+#define IN1 10
+#define IN2 8
+#define IN3 9
+#define IN4 7
+#define ENA 3
+const int trigfront = 5;     // chân trig của HC-SR04
+const int echofront = 6;     // chân echo của HC-SR04
+const int trigleft = 2;     // chân trig của HC-SR04
+const int echoleft = 4;     // chân echo của HC-SR04
+const int trigright = 12;     // chân trig của HC-SR04
+const int echoright = 13;     // chân echo của HC-SR04
+float distanceFront;
+float distanceLeft;
+float distanceRight;
+   
+void setup() {
+ Serial.begin(9600);
+pinMode(trigfront,OUTPUT);
+pinMode(echofront,INPUT);
+pinMode(trigleft,OUTPUT);
+pinMode(echoleft,INPUT);
+pinMode(trigright,OUTPUT);
+pinMode(echoright,INPUT);
+  pinMode(ENA,OUTPUT);
+  pinMode(IN1,OUTPUT);
+  pinMode(IN2,OUTPUT);
+  pinMode(IN3,OUTPUT);
+  pinMode(IN4,OUTPUT);
+  pinMode(ENB,OUTPUT);
+
+}
+
+void Motor(bool a1, bool a2,int speedl, bool a3, bool a4,int speedr)  {
+  analogWrite(ENA,speedl);
+  digitalWrite(IN1,a1);
+  digitalWrite(IN2,a2);
+  digitalWrite(IN3,a3);
+  digitalWrite(IN4,a4);
+  analogWrite(ENB,speedr);
+}
+
+float distance (int trig, int echo){
+  unsigned long a;
+float d;
+digitalWrite(trig,0);
+delayMicroseconds(2);
+digitalWrite(trig,1);
+delayMicroseconds(5);
+digitalWrite(trig,0);
+a= pulseIn(echo,1);
+d= a/2/29.412;
+return d;
+}
+void Chaythang(int time ){
+   Motor(1,0,130,1,0,130);
+  }
+
+ 
+void Dung(){
+  Motor(1,0,0,1,0,0);
+}
+ 
+void Quatrai(int time){
+  Motor(0,1,140,1,0,140);            // tốc độ quay 240
+  delay(time);
+}
+void Quaphai(int time){
+  Motor(1,0,140,0,1,140);
+  delay(time);
+}
+void tieptuc(){
+
+  if(distanceLeft < 8){                        //khi khoảng cách bên trái bé hơn 25cm thì qua phải
+    Quaphai(10);
+     
+  }
+   if(distanceLeft >= 8){              //khi khoảnh cách bên phải bé hơn 25cm thì qua trái
+    Quatrai(10);
+     Serial.print("bám trái ");
+  }
+  Motor(1,0,140,1,0,140);
+  delay(100);
+}
+void loop() {
+  distanceFront = distance(trigfront,echofront);
+  distanceLeft = distance(trigleft,echoleft);
+  distanceRight = distance(trigright,echoright);
+   Serial.print(distanceFront); Serial.print("cm     ");
+  Serial.print(distanceLeft); Serial.print("cm     ");
+  Serial.print(distanceRight); Serial.println("cm     ");
+  int time = 500;
+
+  if ( distanceLeft > 25 ) { // bên trái trống thì cua trái
+  Chaythang(10);
+  Quatrai(300);
+  tieptuc();
+  Serial.print("trái");
+ }else if ( distanceFront < 11 && distanceLeft < 11 ) { // vao đường cụt hoặc ( kẹt trái + kẹt phải) thì cua phải 
+ Quaphai(300); 
+ Serial.print("phai");
+}else {
+ tieptuc();
+ }
+}
+
+
+
